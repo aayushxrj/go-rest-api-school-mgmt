@@ -18,10 +18,23 @@ func teachersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		fmt.Println(r.URL.Path)
-		path := strings.TrimPrefix(r.URL.Path, "/teachers/")  // Extract the part after /teachers/
+		path := strings.TrimPrefix(r.URL.Path, "/teachers/") // Extract the part after /teachers/
 		fmt.Println("Path after /teachers/:", path)
-		userID := strings.TrimSuffix(path, "/")  // browser might add a trailing slash
+		userID := strings.TrimSuffix(path, "/") // browser might add a trailing slash
 		fmt.Println("User ID:", userID)
+
+		//Query Parameters
+		fmt.Println("Query Parameters:", r.URL.Query())
+		sortOrder := r.URL.Query().Get("sortorder")
+		key := r.URL.Query().Get("key")
+
+		//default values
+		if sortOrder == "" {
+			sortOrder = "asc"
+		}
+
+		fmt.Println("Sort Order:", sortOrder)
+		fmt.Println("Key:", key)
 
 		w.Write([]byte("GET Method on Teachers Route"))
 	case http.MethodPost:
