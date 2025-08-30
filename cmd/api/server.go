@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/api/middlewares"
+	mw "github.com/aayushxrj/go-rest-api-school-mgmt/internal/api/middlewares"
 	"golang.org/x/net/http2"
 )
 
@@ -96,7 +96,8 @@ func main() {
 
 		// Handler:   nil, // default mux
 		// Handler:   mux,
-		Handler: middlewares.SecurityHeaders(mux),
+		// Handler: middlewares.SecurityHeaders(mux),
+		Handler: mw.SecurityHeaders(mw.Cors(mux)),
 
 		TLSConfig: tlsConfig,
 	}
