@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/api/middlewares"
 	"golang.org/x/net/http2"
 )
 
@@ -91,8 +92,12 @@ func main() {
 
 	// Create custom server
 	server := &http.Server{
-		Addr:      port,
-		Handler:   mux, // nil for default mux
+		Addr: port,
+
+		// Handler:   nil, // default mux
+		// Handler:   mux,
+		Handler: middlewares.SecurityHeaders(mux),
+
 		TLSConfig: tlsConfig,
 	}
 
@@ -105,6 +110,7 @@ func main() {
 		log.Fatal("Error starting server:", err)
 	}
 
+	// old conn of http 1.1
 	// fmt.Println("Server is running on port", port)
 	// err := http.ListenAndServe(port, nil)
 	// if err != nil {
