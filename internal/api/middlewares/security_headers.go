@@ -26,9 +26,14 @@ func SecurityHeaders(next http.Handler) http.Handler {
 }
 
 // BASIC MIDDLEWARE TEMPLATE
-// func securityHeaders(next http.Handler) http.Handler {
+// package middlewares
+
+// import "net/http"
+
+// func ResponseTimeMiddleware(next http.Handler) http.Handler {
 // 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//  LOGIC HERE
-//	next.ServeHTTP(w, r)
+
+// 		next.ServeHTTP(w, r)
 // 	})
 // }
+
