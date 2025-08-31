@@ -57,6 +57,17 @@ func execsHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		w.Write([]byte("GET Method on Execs Route"))
 	case http.MethodPost:
+		fmt.Println("Query: ", r.URL.Query())
+		fmt.Println("name: ", r.FormValue("name"))
+
+		// Parse form data (necessary for x-www-form-urlencoded)
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Error parsing form data", http.StatusBadRequest)
+			return
+		}
+		fmt.Println("Form Data: ", r.Form) 
+
 		w.Write([]byte("POST Method on Execs Route"))
 	case http.MethodPut:
 		w.Write([]byte("PUT Method on Execs Route"))
@@ -94,15 +105,19 @@ func main() {
 	// rate limiter 
 	rl := mw.NewRateLimiter(5, 1*time.Minute)
 
+	hppOptions := mw.HPPOptions{
+		CheckQuery: true,
+		CheckBody: true,
+		CheckBodyOnlyForContentType: "application/x-www-form-urlencoded",
+		Whitelist: []string{"sortBy", "sortOrder", "name", "age", "class"},
+	}
+
+	secureMux := mw.Hpp(hppOptions)(rl.Middleware(mw.Compression(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Cors(mux))))))
+
 	// Create custom server
 	server := &http.Server{
 		Addr: port,
-
-		// Handler:   nil, // default mux
-		// Handler:   mux,
-		// Handler: middlewares.SecurityHeaders(mux),
-		Handler: rl.Middleware(mw.Compression(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Cors(mux))))),
-
+		Handler: secureMux,
 		TLSConfig: tlsConfig,
 	}
 
