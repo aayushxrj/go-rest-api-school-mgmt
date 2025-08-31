@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	mw "github.com/aayushxrj/go-rest-api-school-mgmt/internal/api/middlewares"
 	"golang.org/x/net/http2"
@@ -90,6 +91,9 @@ func main() {
 		MinVersion: tls.VersionTLS12,
 	}
 
+	// rate limiter 
+	rl := mw.NewRateLimiter(5, 1*time.Minute)
+
 	// Create custom server
 	server := &http.Server{
 		Addr: port,
@@ -97,7 +101,7 @@ func main() {
 		// Handler:   nil, // default mux
 		// Handler:   mux,
 		// Handler: middlewares.SecurityHeaders(mux),
-		Handler: mw.Compression(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Cors(mux)))),
+		Handler: rl.Middleware(mw.Compression(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Cors(mux))))),
 
 		TLSConfig: tlsConfig,
 	}
