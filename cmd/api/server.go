@@ -57,17 +57,6 @@ func execsHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		w.Write([]byte("GET Method on Execs Route"))
 	case http.MethodPost:
-		fmt.Println("Query: ", r.URL.Query())
-		fmt.Println("name: ", r.FormValue("name"))
-
-		// Parse form data (necessary for x-www-form-urlencoded)
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, "Error parsing form data", http.StatusBadRequest)
-			return
-		}
-		fmt.Println("Form Data: ", r.Form) 
-
 		w.Write([]byte("POST Method on Execs Route"))
 	case http.MethodPut:
 		w.Write([]byte("PUT Method on Execs Route"))
@@ -102,22 +91,32 @@ func main() {
 		MinVersion: tls.VersionTLS12,
 	}
 
-	// rate limiter 
+	// rate limiter
 	rl := mw.NewRateLimiter(5, 1*time.Minute)
 
 	hppOptions := mw.HPPOptions{
-		CheckQuery: true,
-		CheckBody: true,
+		CheckQuery:                  true,
+		CheckBody:                   true,
 		CheckBodyOnlyForContentType: "application/x-www-form-urlencoded",
-		Whitelist: []string{"sortBy", "sortOrder", "name", "age", "class"},
+		Whitelist:                   []string{"sortBy", "sortOrder", "name", "age", "class"},
 	}
 
-	secureMux := mw.Hpp(hppOptions)(rl.Middleware(mw.Compression(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Cors(mux))))))
+	// proper ordering of middlewares
+	// example: Cors -> Rate Limiter -> Response Time -> Security Headers -> Compression -> HPP -> Actual Handler
+	// secureMux := mw.Cors(rl.Middleware(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Compression(mw.Hpp(hppOptions)(mux))))))
+	secureMux := applyMiddlewares(mux,
+		mw.Hpp(hppOptions),
+		mw.Compression,
+		mw.SecurityHeaders,
+		mw.ResponseTimeMiddleware,
+		rl.Middleware,
+		mw.Cors,
+	)
 
 	// Create custom server
 	server := &http.Server{
-		Addr: port,
-		Handler: secureMux,
+		Addr:      port,
+		Handler:   secureMux,
 		TLSConfig: tlsConfig,
 	}
 
@@ -130,11 +129,14 @@ func main() {
 		log.Fatal("Error starting server:", err)
 	}
 
-	// old conn of http 1.1
-	// fmt.Println("Server is running on port", port)
-	// err := http.ListenAndServe(port, nil)
-	// if err != nil {
-	// 	log.Fatal("Error starting the server: ", err)
-	// }
+}
 
+// Middleware is a function that wraps an http.Handler with additional functionality
+type Middleware func(http.Handler) http.Handler
+
+func applyMiddlewares(handler http.Handler, middlewares ...Middleware) http.Handler {
+	for _, middleware := range middlewares {
+		handler = middleware(handler)
+	}
+	return handler
 }

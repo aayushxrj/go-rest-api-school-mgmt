@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	// "fmt"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -35,7 +36,9 @@ func (rl *rateLimiter) resetVisitorCount() {
 }
 
 func (rl *rateLimiter) Middleware(next http.Handler) http.Handler {
+	fmt.Println("Rate Limiter Middleware...")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Rate Limiter Middleware being returned...")
 		rl.mu.Lock()
 		defer rl.mu.Unlock()
 
@@ -49,5 +52,6 @@ func (rl *rateLimiter) Middleware(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+		fmt.Println("Rate Limiter ends...")
 	})
 }
