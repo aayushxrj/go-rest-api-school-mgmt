@@ -97,7 +97,7 @@ func main() {
 		// Handler:   nil, // default mux
 		// Handler:   mux,
 		// Handler: middlewares.SecurityHeaders(mux),
-		Handler: mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Cors(mux))),
+		Handler: mw.Compression(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Cors(mux)))),
 
 		TLSConfig: tlsConfig,
 	}
