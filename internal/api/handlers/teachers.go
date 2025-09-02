@@ -45,20 +45,10 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	//  Handle Query Parameters
 	if idStr == "" {
-		first_name := r.URL.Query().Get("first_name")
-		last_name := r.URL.Query().Get("last_name")
-
 		query := "SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE 1=1"
 		var args []any
 
-		if first_name != "" {
-			query += " AND first_name = ?"
-			args = append(args, first_name)
-		}
-		if last_name != "" {
-			query += " AND last_name = ?"
-			args = append(args, last_name)
-		}
+		query, args = addFilters(r, query, args)
 
 		rows, err := db.Query(query, args...)
 		if err != nil {
@@ -169,4 +159,24 @@ func addTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(response)
+}
+
+func addFilters(r *http.Request, query string, args []any) (string, []any) {
+	params := map[string]string{
+		"first_name": "first_name",
+		"last_name":  "last_name",
+		"email":      "email",
+		"class":      "class",
+		"subject":    "subject",
+	}
+
+	for param, dbField := range params {
+		value := r.URL.Query().Get(param)
+		if value != "" {
+			query += " AND " + dbField + " = ?"
+			args = append(args, value)
+		}
+	}
+
+	return query, args
 }
