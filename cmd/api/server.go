@@ -10,11 +10,17 @@ import (
 
 	mw "github.com/aayushxrj/go-rest-api-school-mgmt/internal/api/middlewares"
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/api/router"
+	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/repository/sqlconnect"
 	"github.com/aayushxrj/go-rest-api-school-mgmt/pkg/utils"
 	"golang.org/x/net/http2"
 )
 
 func main() {
+
+	_, err := sqlconnect.ConnectDB("test_db")
+	if err != nil {
+		log.Fatal("Error connecting to database:", err)
+	}
 
 	port := ":3000"
 
@@ -60,7 +66,7 @@ func main() {
 
 	fmt.Println("Server Listening on port", port)
 
-	err := server.ListenAndServeTLS(cert, key)
+	err = server.ListenAndServeTLS(cert, key)
 	if err != nil {
 		log.Fatal("Error starting server:", err)
 	}
