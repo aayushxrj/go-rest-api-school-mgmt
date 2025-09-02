@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	// "time"
 
@@ -16,25 +17,26 @@ import (
 )
 
 type Teacher struct {
-	ID        int
-	FirstName string
-	LastName  string
-	Class     int
-	Subject   string
+	ID        int    `json:"id,omitempty`
+	FirstName string `json :"first_name,omitempty"`
+	LastName  string `json :"last_name,omitempty"`
+	Class     string    `json :"class,omitempty"`
+	Subject   string `json :"subject,omitempty"`
 }
 
 var (
 	teachers = make(map[int]Teacher)
-	// mutex    = &sync.Mutex{}  // use in the post method
-	nextID = 1
+	mutex    = &sync.Mutex{} // use in the post method
+	nextID   = 1
 )
 
 func init() {
-	teachers[nextID] = Teacher{ID: nextID, FirstName: "John", LastName: "Doe", Class: 10, Subject: "Math"}
+	teachers[nextID] = Teacher{ID: nextID, FirstName: "John", LastName: "Doe", Class: "10", Subject: "Math"}
 	nextID++
-	teachers[nextID] = Teacher{ID: nextID, FirstName: "Jane", LastName: "Smith", Class: 9, Subject: "Science"}
+	teachers[nextID] = Teacher{ID: nextID, FirstName: "Jane", LastName: "Smith", Class: "9", Subject: "Science"}
 	nextID++
-	teachers[nextID] = Teacher{ID: nextID, FirstName: "Jane", LastName: "Doe", Class: 11, Subject: "Biology"}
+	teachers[nextID] = Teacher{ID: nextID, FirstName: "Jane", LastName: "Doe", Class: "11", Subject: "Biology"}
+	nextID++
 }
 
 func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +44,7 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	// Path Parameters
 	pathStr := strings.TrimPrefix(r.URL.Path, "/teachers/")
 	idStr := strings.TrimSuffix(pathStr, "/")
-	fmt.Println("ID String:", idStr)
+	// fmt.Println("ID String:", idStr)
 
 	// Query Parameters
 	if idStr == "" {
@@ -67,7 +69,7 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response) 
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
@@ -85,7 +87,42 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(teacher) 
+	json.NewEncoder(w).Encode(teacher)
+}
+
+func addTeacherHadnler(w http.ResponseWriter, r *http.Request) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	var newTeachers []Teacher
+	err := json.NewDecoder(r.Body).Decode(&newTeachers)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	addedTeachers := make([]Teacher, len(newTeachers))
+
+	for i, newTeacher := range newTeachers {
+		newTeacher.ID = nextID
+		teachers[nextID] = newTeacher
+		addedTeachers[i] = newTeacher
+		nextID++
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	response := struct {
+		Status string    `json:"status"`
+		Count  int       `json:"count"`
+		Data   []Teacher `json:"data"`
+	}{
+		Status: "success",
+		Count:  len(addedTeachers),
+		Data:   addedTeachers,
+	}
+
+	json.NewEncoder(w).Encode(response)
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +135,7 @@ func teachersHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		getTeachersHandler(w, r)
 	case http.MethodPost:
-		w.Write([]byte("POST Method on Teachers Route"))
+		addTeacherHadnler(w, r)
 	case http.MethodPut:
 		w.Write([]byte("PUT Method on Teachers Route"))
 	case http.MethodPatch:
