@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	// "time"
 
@@ -12,17 +13,23 @@ import (
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/api/router"
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/repository/sqlconnect"
 	"github.com/aayushxrj/go-rest-api-school-mgmt/pkg/utils"
+	"github.com/joho/godotenv"
 	"golang.org/x/net/http2"
 )
 
 func main() {
 
-	_, err := sqlconnect.ConnectDB("test_db")
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = sqlconnect.ConnectDB()
 	if err != nil {
 		log.Fatal("Error connecting to database:", err)
 	}
 
-	port := ":3000"
+	port := fmt.Sprintf(":%s", os.Getenv("API_PORT"))
 
 	cert := "cmd/api/cert.pem"
 	key := "cmd/api/key.pem"

@@ -1,3 +1,7 @@
+# External Libs used  
+go get github.com/go-sql-driver/mysql
+go get github.com/joho/godotenv
+
 # Setting up MariaDB on WSL Local (PORT 3306)
 
 ```sudo apt install mariadb-server mariadb-client -y
