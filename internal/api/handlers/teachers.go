@@ -1,30 +1,15 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/models"
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/repository/sqlconnect"
 )
-
-var (
-	teachers = make(map[int]models.Teacher)
-	mutex    = &sync.Mutex{} // use in the post method
-	nextID   = 1
-)
-
-func init() {
-	teachers[nextID] = models.Teacher{ID: nextID, FirstName: "John", LastName: "Doe", Class: "10", Subject: "Math"}
-	nextID++
-	teachers[nextID] = models.Teacher{ID: nextID, FirstName: "Jane", LastName: "Smith", Class: "9", Subject: "Science"}
-	nextID++
-	teachers[nextID] = models.Teacher{ID: nextID, FirstName: "Jane", LastName: "Doe", Class: "11", Subject: "Biology"}
-	nextID++
-}
 
 func TeachersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -46,21 +31,52 @@ func TeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
+	db, err := sqlconnect.ConnectDB()
+	if err != nil {
+		http.Error(w, "Database connection error", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
 	// Path Parameters
 	pathStr := strings.TrimPrefix(r.URL.Path, "/teachers/")
 	idStr := strings.TrimSuffix(pathStr, "/")
 	// fmt.Println("ID String:", idStr)
 
-	// Query Parameters
+	//  Handle Query Parameters
 	if idStr == "" {
 		first_name := r.URL.Query().Get("first_name")
 		last_name := r.URL.Query().Get("last_name")
 
-		teacherList := make([]models.Teacher, 0, len(teachers))
-		for _, teacher := range teachers {
-			if (first_name == "" || first_name == teacher.FirstName) && (last_name == "" || last_name == teacher.LastName) {
-				teacherList = append(teacherList, teacher)
+		query := "SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE 1=1"
+		var args []any
+
+		if first_name != "" {
+			query += " AND first_name = ?"
+			args = append(args, first_name)
+		}
+		if last_name != "" {
+			query += " AND last_name = ?"
+			args = append(args, last_name)
+		}
+
+		rows, err := db.Query(query, args...)
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		teacherList := []models.Teacher{}
+
+		for rows.Next() {
+			var teacher models.Teacher
+			err := rows.Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
 			}
+			teacherList = append(teacherList, teacher)
 		}
 
 		response := struct {
@@ -81,13 +97,19 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	// Handle Path Parameter
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid models.Teacher ID", http.StatusBadRequest)
+		http.Error(w, "Invalid Teacher ID", http.StatusBadRequest)
 		return
 	}
 
-	teacher, exists := teachers[id]
-	if !exists {
-		http.Error(w, "models.Teacher Not Found", http.StatusNotFound)
+	var teacher models.Teacher
+
+	err = db.QueryRow("SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE id = ?", id).Scan(
+		&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
+	if err == sql.ErrNoRows {
+		http.Error(w, "Teacher not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 
