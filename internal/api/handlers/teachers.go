@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/models"
+	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/repository/sqlconnect"
 )
 
 var (
@@ -30,7 +31,7 @@ func TeachersHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		getTeachersHandler(w, r)
 	case http.MethodPost:
-		addTeacherHadnler(w, r)
+		addTeacherHandler(w, r)
 	case http.MethodPut:
 		w.Write([]byte("PUT Method on Teachers Route"))
 	case http.MethodPatch:
@@ -94,24 +95,43 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(teacher)
 }
 
-func addTeacherHadnler(w http.ResponseWriter, r *http.Request) {
-	mutex.Lock()
-	defer mutex.Unlock()
+func addTeacherHandler(w http.ResponseWriter, r *http.Request) {
+	db, err := sqlconnect.ConnectDB()
+	if err != nil {
+		http.Error(w, "Database connection error", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
 
 	var newTeachers []models.Teacher
-	err := json.NewDecoder(r.Body).Decode(&newTeachers)
+	err = json.NewDecoder(r.Body).Decode(&newTeachers)
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
+	stmt, err := db.Prepare("INSERT INTO teachers (first_name, last_name, email, class, subject) VALUES (?, ?, ?, ?, ?)")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer stmt.Close()
+
 	addedTeachers := make([]models.Teacher, len(newTeachers))
 
 	for i, newTeacher := range newTeachers {
-		newTeacher.ID = nextID
-		teachers[nextID] = newTeacher
+		res, err := stmt.Exec(newTeacher.FirstName, newTeacher.LastName, newTeacher.Email, newTeacher.Class, newTeacher.Subject)
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		lastID, err := res.LastInsertId()
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		newTeacher.ID = int(lastID)
 		addedTeachers[i] = newTeacher
-		nextID++
 	}
 
 	w.Header().Set("Content-Type", "application/json")
