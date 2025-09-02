@@ -1,3 +1,8 @@
+# Helpful commands
+```
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem -config openssl.cnf
+```
+
 # External Libs used  
 ```
 go get github.com/go-sql-driver/mysql
