@@ -28,6 +28,7 @@ func isValidSortField(field string) bool {
 	return validFields[field]
 }
 
+// GET /teachers/
 func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	db, err := sqlconnect.ConnectDB()
@@ -79,6 +80,7 @@ func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// GET /teachers/{id}
 func GetOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 	db, err := sqlconnect.ConnectDB()
@@ -140,6 +142,7 @@ func addSorting(r *http.Request, query string) string {
 	return query
 }
 
+// POST /teachers/
 func AddTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	db, err := sqlconnect.ConnectDB()
 	if err != nil {
@@ -445,7 +448,7 @@ func PatchOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // DELETE /teachers/{id}
-func DeleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
+func DeleteOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -486,6 +489,83 @@ func DeleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	}{
 		Status: "Teacher deleted successfully",
 		ID:     id,
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
+// DELETE /teachers/
+func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
+	db, err := sqlconnect.ConnectDB()
+	if err != nil {
+		http.Error(w, "Database connection error", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	var ids []int
+	err = json.NewDecoder(r.Body).Decode(&ids)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	stmt, err := tx.Prepare("DELETE FROM teachers WHERE id = ?")
+	if err != nil {
+		tx.Rollback()
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	deletedIds := []int{}
+
+	for _, id := range ids {
+		res, err := stmt.Exec(id)
+		if err != nil {
+			tx.Rollback()
+			http.Error(w, "Error deleteing teacher", http.StatusInternalServerError)
+			return
+		}
+
+		rowsAffected, err := res.RowsAffected()
+		if err != nil {
+			tx.Rollback()git a
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		if rowsAffected > 0 {
+			deletedIds = append(deletedIds, id)
+		}
+		if rowsAffected < 1{
+			tx.Rollback()
+			http.Error(w, "Teacher not found with ID "+strconv.Itoa(id), http.StatusNotFound)
+			return
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		http.Error(w, "Error committing transaction", http.StatusInternalServerError)
+		return
+	}
+
+	if len(deletedIds) < 1 {
+		http.Error(w, "No teachers found to delete", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	response := struct {
+		Status     string `json:"status"`
+		DeletedIDs []int  `json:"deleted_ids"`
+	}{
+		Status:     "Teachers deleted successfully",
+		DeletedIDs: deletedIds,
 	}
 	json.NewEncoder(w).Encode(response)
 }
