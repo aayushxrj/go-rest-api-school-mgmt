@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/api/handlers"
+	_ "github.com/aayushxrj/go-rest-api-school-mgmt/docs" 
+    httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func Router() *http.ServeMux {
@@ -11,6 +13,9 @@ func Router() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", handlers.RootHandler)
+
+	// Swagger UI route
+    mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	mux.HandleFunc("GET /teachers/", handlers.GetTeachersHandler)
 	mux.HandleFunc("POST /teachers/", handlers.AddTeacherHandler)

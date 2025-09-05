@@ -42,3 +42,36 @@ CREATE TABLE IF NOT EXISTS teachers (
     INDEX (email)
 ) AUTO_INCREMENT=100;
 ```
+
+# Swagger
+
+```
+go install github.com/swaggo/swag/cmd/swag@latest
+go get -u github.com/swaggo/http-swagger
+```
+```
+swag init -g cmd/api/server.go
+```
+
+Update
+```
+w.Header().Set("Content-Security-Policy", "default-src 'self'")
+```
+to
+```
+w.Header().Set("Content-Security-Policy", "default-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'")
+```
+
+```
+// @title School Management API
+// @version 1.0
+// @description REST API for managing school data.
+// @schemes https
+// @host localhost:3000
+// @BasePath /
+package main
+```
+
+```
+https://localhost:3000/swagger/index.html
+```

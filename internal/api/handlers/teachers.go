@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-
 	"net/http"
 	"strconv"
 
@@ -10,12 +9,17 @@ import (
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/repository/sqlconnect"
 )
 
-// GET /teachers/
+// GetTeachersHandler godoc
+// @Summary Get all teachers
+// @Description Retrieve a list of all teachers
+// @Tags teachers
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Failure 500 {string} string "Internal server error"
+// @Router /teachers/ [get]
 func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
-
 	var teachers []models.Teacher
 	teachers, err := sqlconnect.GetTeachersDBHandler(teachers, r)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -32,17 +36,22 @@ func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
 }
 
-// GET /teachers/{id}
+// GetOneTeacherHandler godoc
+// @Summary Get one teacher
+// @Description Retrieve details of a teacher by ID
+// @Tags teachers
+// @Produce json
+// @Param id path int true "Teacher ID"
+// @Success 200 {object} models.Teacher
+// @Failure 400 {string} string "Invalid Teacher ID"
+// @Failure 500 {string} string "Internal server error"
+// @Router /teachers/{id} [get]
 func GetOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
-
-	// Path Parameters
 	idStr := r.PathValue("id")
-	// fmt.Println("ID String:", idStr)
-
-	// Handle Path Parameter
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid Teacher ID", http.StatusBadRequest)
@@ -56,12 +65,22 @@ func GetOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(teacher)
 }
 
-// POST /teachers/
+// AddTeacherHandler godoc
+// @Summary Add new teachers
+// @Description Add one or more teachers
+// @Tags teachers
+// @Accept json
+// @Produce json
+// @Param teachers body []models.Teacher true "List of teachers"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Internal server error"
+// @Router /teachers/ [post]
 func AddTeacherHandler(w http.ResponseWriter, r *http.Request) {
-
 	var newTeachers []models.Teacher
 	err := json.NewDecoder(r.Body).Decode(&newTeachers)
 	if err != nil {
@@ -86,11 +105,21 @@ func AddTeacherHandler(w http.ResponseWriter, r *http.Request) {
 		Count:  len(addedTeachers),
 		Data:   addedTeachers,
 	}
-
 	json.NewEncoder(w).Encode(response)
 }
 
-// PUT /teachers/{id}
+// UpdateTeacherHandler godoc
+// @Summary Update a teacher
+// @Description Update an existing teacher by ID
+// @Tags teachers
+// @Accept json
+// @Produce json
+// @Param id path int true "Teacher ID"
+// @Param teacher body models.Teacher true "Updated teacher"
+// @Success 200 {object} models.Teacher
+// @Failure 400 {string} string "Invalid request payload or ID"
+// @Failure 500 {string} string "Internal server error"
+// @Router /teachers/{id} [put]
 func UpdateTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
@@ -113,12 +142,21 @@ func UpdateTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(updatedTeacherFromDB)
 }
 
-// PATCH /teachers/
+// PatchTeachersHandler godoc
+// @Summary Partially update multiple teachers
+// @Description Apply partial updates to multiple teachers
+// @Tags teachers
+// @Accept json
+// @Param updates body []map[string]interface{} true "List of updates"
+// @Success 204 "No Content"
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Internal server error"
+// @Router /teachers/ [patch]
 func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
-
 	var updates []map[string]interface{}
 	err := json.NewDecoder(r.Body).Decode(&updates)
 	if err != nil {
@@ -134,7 +172,18 @@ func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// PATCH /teachers/{id}
+// PatchOneTeacherHandler godoc
+// @Summary Partially update one teacher
+// @Description Apply partial updates to a single teacher by ID
+// @Tags teachers
+// @Accept json
+// @Produce json
+// @Param id path int true "Teacher ID"
+// @Param updates body map[string]interface{} true "Partial updates"
+// @Success 200 {object} models.Teacher
+// @Failure 400 {string} string "Invalid request payload or ID"
+// @Failure 500 {string} string "Internal server error"
+// @Router /teachers/{id} [patch]
 func PatchOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
@@ -157,10 +206,19 @@ func PatchOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(updatedTeacher)
 }
 
-// DELETE /teachers/{id}
+// DeleteOneTeacherHandler godoc
+// @Summary Delete one teacher
+// @Description Delete a teacher by ID
+// @Tags teachers
+// @Param id path int true "Teacher ID"
+// @Success 204 "No Content"
+// @Failure 400 {string} string "Invalid Teacher ID"
+// @Failure 500 {string} string "Internal server error"
+// @Router /teachers/{id} [delete]
 func DeleteOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
@@ -176,22 +234,20 @@ func DeleteOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-	// or send response body
-
-	// w.Header().Set("Content-Type", "application/json")
-	// response := struct {
-	// 	Status string `json:"status"`
-	// 	ID     int    `json:"id"`
-	// }{
-	// 	Status: "Teacher deleted successfully",
-	// 	ID:     id,
-	// }
-	// json.NewEncoder(w).Encode(response)
 }
 
-// DELETE /teachers/
+// DeleteTeachersHandler godoc
+// @Summary Delete multiple teachers
+// @Description Delete multiple teachers by their IDs
+// @Tags teachers
+// @Accept json
+// @Produce json
+// @Param ids body []int true "List of teacher IDs"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Internal server error"
+// @Router /teachers/ [delete]
 func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
-
 	var ids []int
 	err := json.NewDecoder(r.Body).Decode(&ids)
 	if err != nil {
@@ -206,6 +262,7 @@ func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	response := struct {
 		Status     string `json:"status"`
 		DeletedIDs []int  `json:"deleted_ids"`

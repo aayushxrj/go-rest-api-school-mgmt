@@ -1,0 +1,255 @@
+basePath: /
+definitions:
+  models.Teacher:
+    properties:
+      class:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      subject:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: REST API for managing school data.
+  title: School Management API
+  version: "1.0"
+paths:
+  /teachers/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete multiple teachers by their IDs
+      parameters:
+      - description: List of teacher IDs
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete multiple teachers
+      tags:
+      - teachers
+    get:
+      description: Retrieve a list of all teachers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get all teachers
+      tags:
+      - teachers
+    patch:
+      consumes:
+      - application/json
+      description: Apply partial updates to multiple teachers
+      parameters:
+      - description: List of updates
+        in: body
+        name: updates
+        required: true
+        schema:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Partially update multiple teachers
+      tags:
+      - teachers
+    post:
+      consumes:
+      - application/json
+      description: Add one or more teachers
+      parameters:
+      - description: List of teachers
+        in: body
+        name: teachers
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.Teacher'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Add new teachers
+      tags:
+      - teachers
+  /teachers/{id}:
+    delete:
+      description: Delete a teacher by ID
+      parameters:
+      - description: Teacher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid Teacher ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete one teacher
+      tags:
+      - teachers
+    get:
+      description: Retrieve details of a teacher by ID
+      parameters:
+      - description: Teacher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Teacher'
+        "400":
+          description: Invalid Teacher ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get one teacher
+      tags:
+      - teachers
+    patch:
+      consumes:
+      - application/json
+      description: Apply partial updates to a single teacher by ID
+      parameters:
+      - description: Teacher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Partial updates
+        in: body
+        name: updates
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Teacher'
+        "400":
+          description: Invalid request payload or ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Partially update one teacher
+      tags:
+      - teachers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing teacher by ID
+      parameters:
+      - description: Teacher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated teacher
+        in: body
+        name: teacher
+        required: true
+        schema:
+          $ref: '#/definitions/models.Teacher'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Teacher'
+        "400":
+          description: Invalid request payload or ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update a teacher
+      tags:
+      - teachers
+schemes:
+- https
+swagger: "2.0"

@@ -1,3 +1,9 @@
+// @title School Management API
+// @version 1.0
+// @description REST API for managing school data.
+// @schemes https
+// @host localhost:3000
+// @BasePath /
 package main
 
 import (
