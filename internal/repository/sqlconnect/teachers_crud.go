@@ -131,7 +131,8 @@ func AddTeachersDBHandler(newTeachers []models.Teacher) ([]models.Teacher, error
 	}
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO teachers (first_name, last_name, email, class, subject) VALUES (?, ?, ?, ?, ?)")
+	// stmt, err := db.Prepare("INSERT INTO teachers (first_name, last_name, email, class, subject) VALUES (?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare(GenerateInsertQuery(models.Teacher{}))
 	if err != nil {
 		return nil, utils.ErrorHandler(err, "Database error")
 	}
@@ -140,7 +141,9 @@ func AddTeachersDBHandler(newTeachers []models.Teacher) ([]models.Teacher, error
 	addedTeachers := make([]models.Teacher, len(newTeachers))
 
 	for i, newTeacher := range newTeachers {
-		res, err := stmt.Exec(newTeacher.FirstName, newTeacher.LastName, newTeacher.Email, newTeacher.Class, newTeacher.Subject)
+		// res, err := stmt.Exec(newTeacher.FirstName, newTeacher.LastName, newTeacher.Email, newTeacher.Class, newTeacher.Subject)
+		values := GetStructValues(newTeacher)
+		res, err := stmt.Exec(values...)
 		if err != nil {
 			return nil, utils.ErrorHandler(err, "Database error")
 		}

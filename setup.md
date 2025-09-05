@@ -75,3 +75,7 @@ package main
 ```
 https://localhost:3000/swagger/index.html
 ```
+
+# TODO
+
+- Reduce boilerplate code usnig ([GORM](https://gorm.io/docs/index.html))

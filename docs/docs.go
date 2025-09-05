@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/teachers/": {
+        "/teachers": {
             "get": {
                 "description": "Retrieve a list of all teachers",
                 "produces": [

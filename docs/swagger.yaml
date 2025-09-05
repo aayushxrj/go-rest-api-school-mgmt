@@ -22,7 +22,7 @@ info:
   title: School Management API
   version: "1.0"
 paths:
-  /teachers/:
+  /teachers:
     delete:
       consumes:
       - application/json

@@ -12,7 +12,7 @@
     "host": "localhost:3000",
     "basePath": "/",
     "paths": {
-        "/teachers/": {
+        "/teachers": {
             "get": {
                 "description": "Retrieve a list of all teachers",
                 "produces": [

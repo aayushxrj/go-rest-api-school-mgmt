@@ -16,7 +16,7 @@ import (
 // @Produce json
 // @Success 200 {object} map[string]interface{}
 // @Failure 500 {string} string "Internal server error"
-// @Router /teachers/ [get]
+// @Router /teachers [get]
 func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	var teachers []models.Teacher
 	teachers, err := sqlconnect.GetTeachersDBHandler(teachers, r)
@@ -79,7 +79,7 @@ func GetOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 201 {object} map[string]interface{}
 // @Failure 400 {string} string "Invalid request payload"
 // @Failure 500 {string} string "Internal server error"
-// @Router /teachers/ [post]
+// @Router /teachers [post]
 func AddTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	var newTeachers []models.Teacher
 	err := json.NewDecoder(r.Body).Decode(&newTeachers)
@@ -155,7 +155,7 @@ func UpdateTeacherHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 204 "No Content"
 // @Failure 400 {string} string "Invalid request payload"
 // @Failure 500 {string} string "Internal server error"
-// @Router /teachers/ [patch]
+// @Router /teachers [patch]
 func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	var updates []map[string]interface{}
 	err := json.NewDecoder(r.Body).Decode(&updates)
@@ -246,7 +246,7 @@ func DeleteOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {string} string "Invalid request payload"
 // @Failure 500 {string} string "Internal server error"
-// @Router /teachers/ [delete]
+// @Router /teachers [delete]
 func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	var ids []int
 	err := json.NewDecoder(r.Body).Decode(&ids)
