@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 
 	"net/http"
 	"strconv"
@@ -18,7 +17,7 @@ func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	teachers, err := sqlconnect.GetTeachersDBHandler(teachers, r)
 
 	if err != nil {
-		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -52,7 +51,7 @@ func GetOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 	teacher, err := sqlconnect.GetOneTeacherDBHandler(id)
 	if err != nil {
-		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -72,7 +71,7 @@ func AddTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 	addedTeachers, err := sqlconnect.AddTeachersDBHandler(newTeachers)
 	if err != nil {
-		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -109,7 +108,7 @@ func UpdateTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 	updatedTeacherFromDB, err := sqlconnect.UpdateTeacherDBHandler(id, updatedTeacher)
 	if err != nil {
-		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -129,7 +128,7 @@ func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = sqlconnect.PatchTeachersDBHandler(updates)
 	if err != nil {
-		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -153,7 +152,7 @@ func PatchOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 	updatedTeacher, err := sqlconnect.PatchOneTeacherDBHandler(id, updates)
 	if err != nil {
-		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -172,7 +171,7 @@ func DeleteOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = sqlconnect.DeleteOneTeacherDBHandler(id)
 	if err != nil {
-		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -202,7 +201,7 @@ func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	deletedIds, err := sqlconnect.DeleteTeachersDBHandler(ids)
 	if err != nil {
-		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
