@@ -42,6 +42,19 @@ CREATE TABLE IF NOT EXISTS teachers (
     INDEX (email)
 ) AUTO_INCREMENT=100;
 ```
+```
+CREATE INDEX idx_class ON teachers(class);
+
+CREATE TABLE IF NOT EXISTS students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    class VARCHAR(255) NOT NULL,
+    INDEX (email),
+    FOREIGN KEY (class) REFERENCES teachers(class)
+) AUTO_INCREMENT=100;
+```
 
 # Swagger
 
