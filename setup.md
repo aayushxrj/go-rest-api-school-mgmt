@@ -78,4 +78,6 @@ https://localhost:3000/swagger/index.html
 
 # TODO
 
-- Reduce boilerplate code usnig ([GORM](https://gorm.io/docs/index.html))
+- Reduce boilerplate code using ([GORM](https://gorm.io/docs/index.html)) (Manual to Automatic Query Generation)
+
+- Implement data validation using [Validator](https://github.com/go-playground/validator)

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -81,11 +82,54 @@ func GetOneTeacherHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "Internal server error"
 // @Router /teachers [post]
 func AddTeacherHandler(w http.ResponseWriter, r *http.Request) {
-	var newTeachers []models.Teacher
-	err := json.NewDecoder(r.Body).Decode(&newTeachers)
+
+	// validate the data before sending furthur
+	var rawTeachers []map[string]interface{}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body.", http.StatusInternalServerError)
+		return
+	}
+
+	err = json.Unmarshal(body, &rawTeachers)
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
+	}
+
+	// for non-existent fields
+	fields := GetFieldNames(models.Teacher{})
+
+	allowedFields := make(map[string]struct{})
+	for _, field := range fields {
+		allowedFields[field] = struct{}{}
+	}
+
+	for _, teacher := range rawTeachers {
+		for key := range teacher {
+			_, ok := allowedFields[key]
+			if !ok {
+				http.Error(w, "Unacceptable field found in request. Only use allowed fields", http.StatusBadRequest)
+				return
+			}
+		}
+	}
+
+	var newTeachers []models.Teacher
+	err = json.Unmarshal(body, &newTeachers)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	// for blank value in fields
+	for _, teacher := range newTeachers {
+		err := CheckBlankFields(teacher)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	addedTeachers, err := sqlconnect.AddTeachersDBHandler(newTeachers)

@@ -11,7 +11,7 @@ func GenerateInsertQuery(model interface{}) string {
 	var columns, placeholders string
 	for i := 0; i < modelType.NumField(); i++ {
 		dbTag := modelType.Field(i).Tag.Get("db")
-		fmt.Println("dbTag:", dbTag)
+		// fmt.Println("dbTag:", dbTag)
 		dbTag = strings.TrimSuffix(dbTag, ",omitempty")
 		if dbTag != "" && dbTag != "id" {
 			if columns != "" {
