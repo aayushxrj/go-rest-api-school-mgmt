@@ -72,6 +72,9 @@ CREATE TABLE IF NOT EXISTS execs (
     INDEX idx_username (username)
 );
 ```
+```
+ALTER TABLE execs ADD COLUMN password_token_expires VARCHAR(255);
+```
 
 # Swagger
 
