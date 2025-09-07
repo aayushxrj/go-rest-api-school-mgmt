@@ -53,7 +53,7 @@ func GetOneExecDBHandler(id int) (models.Exec, error) {
 	defer db.Close()
 
 	var exec models.Exec
-	err = db.QueryRow(`SSELECT id, first_name, last_name, email, username, user_created_at, inactive_status, role FROM execs WHERE id = ?`, id).Scan(
+	err = db.QueryRow(`SELECT id, first_name, last_name, email, username, user_created_at, inactive_status, role FROM execs WHERE id = ?`, id).Scan(
 		&exec.ID, &exec.FirstName, &exec.LastName, &exec.Email,
 		&exec.Username, &exec.UserCreatedAt, &exec.InactiveStatus, &exec.Role,
 	)

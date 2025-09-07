@@ -1,5 +1,39 @@
 basePath: /
 definitions:
+  models.Exec:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      inactive_status:
+        type: boolean
+      last_name:
+        type: string
+      password:
+        type: string
+      password_changed_at:
+        $ref: '#/definitions/models.NullString'
+      password_reset_token:
+        $ref: '#/definitions/models.NullString'
+      password_token_expires:
+        $ref: '#/definitions/models.NullString'
+      role:
+        type: string
+      user_created_at:
+        $ref: '#/definitions/models.NullString'
+      username:
+        type: string
+    type: object
+  models.NullString:
+    properties:
+      string:
+        type: string
+      valid:
+        type: boolean
+    type: object
   models.Student:
     properties:
       class:
@@ -35,6 +69,191 @@ info:
   title: School Management API
   version: "1.0"
 paths:
+  /execs:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of execs with optional filtering and sorting.
+      parameters:
+      - description: Filter by first name (optional)
+        in: query
+        name: first_name
+        type: string
+      - description: Filter by last name (optional)
+        in: query
+        name: last_name
+        type: string
+      - description: Filter by email (optional)
+        in: query
+        name: email
+        type: string
+      - description: Filter by role (optional)
+        in: query
+        name: role
+        type: string
+      - description: Sorting (e.g., first_name:asc, role:desc) (optional)
+        in: query
+        name: sortby
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of execs with metadata
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Retrieve all execs
+      tags:
+      - execs
+    patch:
+      consumes:
+      - application/json
+      description: Apply partial updates to multiple execs
+      parameters:
+      - description: List of updates with exec IDs
+        in: body
+        name: updates
+        required: true
+        schema:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Partially update multiple execs
+      tags:
+      - execs
+    post:
+      consumes:
+      - application/json
+      description: Add one or more execs
+      parameters:
+      - description: List of execs
+        in: body
+        name: execs
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.Exec'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Add new execs
+      tags:
+      - execs
+  /execs/{id}:
+    delete:
+      description: Delete an exec by ID
+      parameters:
+      - description: Exec ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid Exec ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete one exec
+      tags:
+      - execs
+    get:
+      description: Retrieve details of an exec by ID
+      parameters:
+      - description: Exec ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Exec'
+        "400":
+          description: Invalid Exec ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get one exec
+      tags:
+      - execs
+    patch:
+      consumes:
+      - application/json
+      description: Apply partial updates to a single exec by ID
+      parameters:
+      - description: Exec ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Partial updates
+        in: body
+        name: updates
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Exec'
+        "400":
+          description: Invalid request payload or ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Partially update one exec
+      tags:
+      - execs
   /students:
     delete:
       consumes:

@@ -15,6 +15,284 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/execs": {
+            "get": {
+                "description": "Get a list of execs with optional filtering and sorting.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Retrieve all execs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by first name (optional)",
+                        "name": "first_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by last name (optional)",
+                        "name": "last_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by email (optional)",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by role (optional)",
+                        "name": "role",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sorting (e.g., first_name:asc, role:desc) (optional)",
+                        "name": "sortby",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of execs with metadata",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add one or more execs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Add new execs",
+                "parameters": [
+                    {
+                        "description": "List of execs",
+                        "name": "execs",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Exec"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Apply partial updates to multiple execs",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Partially update multiple execs",
+                "parameters": [
+                    {
+                        "description": "List of updates with exec IDs",
+                        "name": "updates",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": true
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/execs/{id}": {
+            "get": {
+                "description": "Retrieve details of an exec by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Get one exec",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Exec ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Exec"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Exec ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an exec by ID",
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Delete one exec",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Exec ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Invalid Exec ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Apply partial updates to a single exec by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Partially update one exec",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Exec ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Partial updates",
+                        "name": "updates",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Exec"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload or ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/students": {
             "get": {
                 "description": "Get a list of students with optional filtering and sorting.",
@@ -867,6 +1145,58 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.Exec": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "inactive_status": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "password_changed_at": {
+                    "$ref": "#/definitions/models.NullString"
+                },
+                "password_reset_token": {
+                    "$ref": "#/definitions/models.NullString"
+                },
+                "password_token_expires": {
+                    "$ref": "#/definitions/models.NullString"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "user_created_at": {
+                    "$ref": "#/definitions/models.NullString"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NullString": {
+            "type": "object",
+            "properties": {
+                "string": {
+                    "type": "string"
+                },
+                "valid": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.Student": {
             "type": "object",
             "properties": {
