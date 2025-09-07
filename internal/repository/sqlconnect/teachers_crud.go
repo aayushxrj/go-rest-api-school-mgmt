@@ -341,3 +341,46 @@ func DeleteTeachersDBHandler(ids []int) ([]int, error) {
 	}
 	return deletedIds, nil
 }
+
+func GetStudentsByTeacherIdDBHandler(id int, students []models.Student) ([]models.Student, error){
+	db, err := ConnectDB()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Database connection error")
+	}
+	defer db.Close()
+
+	query := "SELECT id, first_name, last_name, email ,class FROM students WHERE class = (SELECT class FROM teachers where id = ?)"
+	rows, err := db.Query(query, id)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Database error")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var student models.Student
+		err := rows.Scan(&student.ID, &student.FirstName, &student.LastName, &student.Email, &student.Class)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "Database error")
+		}
+		students = append(students, student)
+	}
+	return students, nil
+}
+
+func GetStudentsCountByTeacherIdDBHandler(teacherId string) (int, error) {
+	db, err := ConnectDB()
+	if err != nil {
+		return 0, utils.ErrorHandler(err, "Database connection error")
+	}
+
+	defer db.Close()
+
+	query := `SELECT COUNT(*) FROM students WHERE class = (SELECT class FROM teachers WHERE id = ?)`
+	var studentCount int
+	err = db.QueryRow(query, teacherId).Scan(&studentCount)
+	if err != nil {
+		return 0, utils.ErrorHandler(err, "Database error")
+	}
+
+	return studentCount, nil
+}

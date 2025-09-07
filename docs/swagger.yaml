@@ -541,6 +541,66 @@ paths:
       summary: Update a teacher
       tags:
       - teachers
+  /teachers/{id}/studentcount:
+    get:
+      consumes:
+      - application/json
+      description: Get the total number of students assigned to a specific teacher.
+      parameters:
+      - description: Teacher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Student count
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid Teacher ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Retrieve student count by teacher ID
+      tags:
+      - teachers
+  /teachers/{id}/students:
+    get:
+      consumes:
+      - application/json
+      description: Get all students assigned to a specific teacher.
+      parameters:
+      - description: Teacher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of students with metadata
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid Teacher ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Retrieve students by teacher ID
+      tags:
+      - teachers
 schemes:
 - https
 swagger: "2.0"
