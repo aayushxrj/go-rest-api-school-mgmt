@@ -11,11 +11,18 @@ import (
 )
 
 // GetTeachersHandler godoc
-// @Summary Get all teachers
-// @Description Retrieve a list of all teachers
+// @Summary Retrieve all teachers
+// @Description Get a list of teachers with optional filtering and sorting.
 // @Tags teachers
+// @Accept json
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Param first_name query string false "Filter by first name (optional)"
+// @Param last_name query string false "Filter by last name (optional)"
+// @Param email query string false "Filter by email (optional)"
+// @Param class query string false "Filter by class (optional)"
+// @Param subject query string false "Filter by subject (optional)"
+// @Param sortby query string false "Sorting (e.g., first_name:asc, class:desc) (optional)"
+// @Success 200 {object} map[string]interface{} "List of teachers with metadata"
 // @Failure 500 {string} string "Internal server error"
 // @Router /teachers [get]
 func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {

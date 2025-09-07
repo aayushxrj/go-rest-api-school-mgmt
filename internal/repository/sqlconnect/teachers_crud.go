@@ -5,70 +5,10 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/models"
 	"github.com/aayushxrj/go-rest-api-school-mgmt/pkg/utils"
 )
-
-func isValidSortOrder(order string) bool {
-	return order == "asc" || order == "desc"
-}
-func isValidSortField(field string) bool {
-	validFields := map[string]bool{
-		"first_name": true,
-		"last_name":  true,
-		"email":      true,
-		"class":      true,
-		"subject":    true,
-	}
-	return validFields[field]
-}
-
-func addSorting(r *http.Request, query string) string {
-	// teachers/?sortby=name:asc&sortby=class:desc
-	sortParams := r.URL.Query()["sortby"]
-	// fmt.Println(sortParams)
-
-	if len(sortParams) > 0 {
-		query += " ORDER BY"
-		for i, param := range sortParams {
-			parts := strings.Split(param, ":")
-			if len(parts) != 2 {
-				continue
-			}
-			field, order := parts[0], parts[1]
-			if !isValidSortField(field) || !isValidSortOrder(order) {
-				continue
-			}
-			if i > 0 {
-				query += ","
-			}
-			query += " " + field + " " + order
-		}
-	}
-	return query
-}
-
-func addFilters(r *http.Request, query string, args []any) (string, []any) {
-	params := map[string]string{
-		"first_name": "first_name",
-		"last_name":  "last_name",
-		"email":      "email",
-		"class":      "class",
-		"subject":    "subject",
-	}
-
-	for param, dbField := range params {
-		value := r.URL.Query().Get(param)
-		if value != "" {
-			query += " AND " + dbField + " = ?"
-			args = append(args, value)
-		}
-	}
-
-	return query, args
-}
 
 func GetTeachersDBHandler(teachers []models.Teacher, r *http.Request) ([]models.Teacher, error) {
 	db, err := ConnectDB()
@@ -81,10 +21,10 @@ func GetTeachersDBHandler(teachers []models.Teacher, r *http.Request) ([]models.
 	query := "SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE 1=1"
 	var args []any
 
-	query, args = addFilters(r, query, args)
+	query, args = utils.AddFilters(r, query, args, models.Teacher{})
 
 	// teachers/?sortby=name:asc&sortby=class:desc
-	query = addSorting(r, query)
+	query = utils.AddSorting(r, query, models.Teacher{})
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
@@ -132,7 +72,7 @@ func AddTeachersDBHandler(newTeachers []models.Teacher) ([]models.Teacher, error
 	defer db.Close()
 
 	// stmt, err := db.Prepare("INSERT INTO teachers (first_name, last_name, email, class, subject) VALUES (?, ?, ?, ?, ?)")
-	stmt, err := db.Prepare(GenerateInsertQuery(models.Teacher{}))
+	stmt, err := db.Prepare(utils.GenerateInsertQuery("TEACHERS", models.Teacher{}))
 	if err != nil {
 		return nil, utils.ErrorHandler(err, "Database error")
 	}
@@ -142,7 +82,7 @@ func AddTeachersDBHandler(newTeachers []models.Teacher) ([]models.Teacher, error
 
 	for i, newTeacher := range newTeachers {
 		// res, err := stmt.Exec(newTeacher.FirstName, newTeacher.LastName, newTeacher.Email, newTeacher.Class, newTeacher.Subject)
-		values := GetStructValues(newTeacher)
+		values := utils.GetStructValues(newTeacher)
 		res, err := stmt.Exec(values...)
 		if err != nil {
 			return nil, utils.ErrorHandler(err, "Database error")

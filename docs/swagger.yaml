@@ -1,5 +1,18 @@
 basePath: /
 definitions:
+  models.Student:
+    properties:
+      class:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+    type: object
   models.Teacher:
     properties:
       class:
@@ -22,6 +35,257 @@ info:
   title: School Management API
   version: "1.0"
 paths:
+  /students:
+    delete:
+      consumes:
+      - application/json
+      description: Delete multiple students by their IDs
+      parameters:
+      - description: List of student IDs
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete multiple students
+      tags:
+      - students
+    get:
+      consumes:
+      - application/json
+      description: Get a list of students with optional filtering and sorting.
+      parameters:
+      - description: Filter by first name (optional)
+        in: query
+        name: first_name
+        type: string
+      - description: Filter by last name (optional)
+        in: query
+        name: last_name
+        type: string
+      - description: Filter by email (optional)
+        in: query
+        name: email
+        type: string
+      - description: Filter by class (optional)
+        in: query
+        name: class
+        type: string
+      - description: Sorting (e.g., first_name:asc, class:desc) (optional)
+        in: query
+        name: sortby
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of students with metadata
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Retrieve all students
+      tags:
+      - students
+    patch:
+      consumes:
+      - application/json
+      description: Apply partial updates to multiple students
+      parameters:
+      - description: List of updates
+        in: body
+        name: updates
+        required: true
+        schema:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Partially update multiple students
+      tags:
+      - students
+    post:
+      consumes:
+      - application/json
+      description: Add one or more students
+      parameters:
+      - description: List of students
+        in: body
+        name: students
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.Student'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Add new students
+      tags:
+      - students
+  /students/{id}:
+    delete:
+      description: Delete a student by ID
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid Student ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete one student
+      tags:
+      - students
+    get:
+      description: Retrieve details of a student by ID
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Student'
+        "400":
+          description: Invalid Student ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get one student
+      tags:
+      - students
+    patch:
+      consumes:
+      - application/json
+      description: Apply partial updates to a single student by ID
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Partial updates
+        in: body
+        name: updates
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Student'
+        "400":
+          description: Invalid request payload or ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Partially update one student
+      tags:
+      - students
+    put:
+      consumes:
+      - application/json
+      description: Update an existing student by ID
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated student
+        in: body
+        name: student
+        required: true
+        schema:
+          $ref: '#/definitions/models.Student'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Student'
+        "400":
+          description: Invalid request payload or ID
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update a student
+      tags:
+      - students
   /teachers:
     delete:
       consumes:
@@ -56,12 +320,39 @@ paths:
       tags:
       - teachers
     get:
-      description: Retrieve a list of all teachers
+      consumes:
+      - application/json
+      description: Get a list of teachers with optional filtering and sorting.
+      parameters:
+      - description: Filter by first name (optional)
+        in: query
+        name: first_name
+        type: string
+      - description: Filter by last name (optional)
+        in: query
+        name: last_name
+        type: string
+      - description: Filter by email (optional)
+        in: query
+        name: email
+        type: string
+      - description: Filter by class (optional)
+        in: query
+        name: class
+        type: string
+      - description: Filter by subject (optional)
+        in: query
+        name: subject
+        type: string
+      - description: Sorting (e.g., first_name:asc, class:desc) (optional)
+        in: query
+        name: sortby
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: List of teachers with metadata
           schema:
             additionalProperties: true
             type: object
@@ -69,7 +360,7 @@ paths:
           description: Internal server error
           schema:
             type: string
-      summary: Get all teachers
+      summary: Retrieve all teachers
       tags:
       - teachers
     patch:
