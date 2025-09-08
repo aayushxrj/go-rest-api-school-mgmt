@@ -314,6 +314,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Secure:   true,
 		Expires:  time.Now().Add(24 * time.Hour),
+		SameSite: http.SameSiteStrictMode,
 	})
 
 	// Response Body
@@ -324,4 +325,27 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}{
 		Token: tokenString}
 	json.NewEncoder(w).Encode(response)
+}
+
+// LogoutHandler godoc
+// @Summary Log out a user
+// @Description Logs out the currently authenticated user by clearing the JWT cookie.
+// @Tags auth
+// @Produce json
+// @Success 200 {object} map[string]string "Logged out successfully"
+// @Failure 500 {string} string "Internal server error"
+// @Router /execs/logout [post]
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Unix(0, 0),
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"message": "Logged out succesfully"}`))
 }

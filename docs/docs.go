@@ -222,6 +222,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/execs/logout": {
+            "post": {
+                "description": "Logs out the currently authenticated user by clearing the JWT cookie.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log out a user",
+                "responses": {
+                    "200": {
+                        "description": "Logged out successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/execs/{id}": {
             "get": {
                 "description": "Retrieve details of an exec by ID",

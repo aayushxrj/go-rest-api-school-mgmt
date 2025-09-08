@@ -291,6 +291,25 @@ paths:
       summary: User Login
       tags:
       - auth
+  /execs/logout:
+    post:
+      description: Logs out the currently authenticated user by clearing the JWT cookie.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged out successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Log out a user
+      tags:
+      - auth
   /students:
     delete:
       consumes:
