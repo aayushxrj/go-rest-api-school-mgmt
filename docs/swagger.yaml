@@ -254,6 +254,43 @@ paths:
       summary: Partially update one exec
       tags:
       - execs
+  /execs/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates an exec user using username and password and returns
+        a JWT token.
+      parameters:
+      - description: Login Credentials (username and password required)
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.Exec'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JWT token in response body and also set as HttpOnly cookie
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request body or missing username/password
+          schema:
+            type: string
+        "403":
+          description: Account inactive or password incorrect
+          schema:
+            type: string
+        "500":
+          description: Could not create login token
+          schema:
+            type: string
+      summary: User Login
+      tags:
+      - auth
   /students:
     delete:
       consumes:

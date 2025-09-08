@@ -32,7 +32,9 @@ func main() {
 
 	_, err = sqlconnect.ConnectDB()
 	if err != nil {
-		log.Fatal("Error connecting to database:", err)
+		// log.Fatal("Error connecting to database:", err)
+		utils.ErrorHandler(err, "Error connecting to database")
+		return
 	}
 
 	port := fmt.Sprintf(":%s", os.Getenv("API_PORT"))

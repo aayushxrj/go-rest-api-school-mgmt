@@ -8,6 +8,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pe
 go get github.com/go-sql-driver/mysql
 go get github.com/joho/godotenv
 go get golang.org/x/crypto/argon2
+go get github.com/golang-jwt/jwt/v5
 ```
 
 # Setting up MariaDB on WSL Local (PORT 3306)

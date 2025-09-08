@@ -164,6 +164,61 @@
                 }
             }
         },
+        "/execs/login": {
+            "post": {
+                "description": "Authenticates an exec user using username and password and returns a JWT token.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "User Login",
+                "parameters": [
+                    {
+                        "description": "Login Credentials (username and password required)",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Exec"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JWT token in response body and also set as HttpOnly cookie",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or missing username/password",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Account inactive or password incorrect",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Could not create login token",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/execs/{id}": {
             "get": {
                 "description": "Retrieve details of an exec by ID",

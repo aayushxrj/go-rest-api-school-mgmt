@@ -5,9 +5,11 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/models"
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/repository/sqlconnect"
+	"github.com/aayushxrj/go-rest-api-school-mgmt/pkg/utils"
 )
 
 // GetExecsHandler godoc
@@ -33,9 +35,9 @@ func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := struct {
-		Status string         `json:"status"`
-		Count  int            `json:"count"`
-		Data   []models.Exec  `json:"data"`
+		Status string        `json:"status"`
+		Count  int           `json:"count"`
+		Data   []models.Exec `json:"data"`
 	}{
 		Status: "success",
 		Count:  len(execs),
@@ -140,9 +142,9 @@ func AddExecHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	response := struct {
-		Status string         `json:"status"`
-		Count  int            `json:"count"`
-		Data   []models.Exec  `json:"data"`
+		Status string        `json:"status"`
+		Count  int           `json:"count"`
+		Data   []models.Exec `json:"data"`
 	}{
 		Status: "success",
 		Count:  len(addedExecs),
@@ -239,4 +241,87 @@ func DeleteOneExecHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// LoginHandler godoc
+// @Summary User Login
+// @Description Authenticates an exec user using username and password and returns a JWT token.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param credentials body models.Exec true "Login Credentials (username and password required)"
+// @Success 200 {object} map[string]string "JWT token in response body and also set as HttpOnly cookie"
+// @Failure 400 {string} string "Invalid request body or missing username/password"
+// @Failure 403 {string} string "Account inactive or password incorrect"
+// @Failure 500 {string} string "Could not create login token"
+// @Router /execs/login [post]
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+
+	var req models.Exec
+
+	// Data Validation
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Username == "" || req.Password == "" {
+		http.Error(w, "Username and password are blank", http.StatusBadRequest)
+		return
+	}
+
+	// Search for user if user actually exists
+	user, err := sqlconnect.LoginDBHandler(req.Username)
+	if err != nil {
+		http.Error(w, "Invalid username or password", http.StatusBadRequest)
+		return
+	}
+
+	// is user active
+	if user.InactiveStatus {
+		http.Error(w, "Account is inactive", http.StatusForbidden)
+		return
+	}
+
+	// verify password
+	err = utils.VerifyPassword(req.Password, user.Password)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	// Generate JWT Token
+	tokenString, err := utils.SignToken(user.ID, req.Username, user.Role)
+	if err != nil {
+		http.Error(w, "Could not create login token", http.StatusInternalServerError)
+		return
+	}
+
+	// Send token as a response or as a cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    tokenString,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(24 * time.Hour),
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "test",
+		Value:    "testing",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(24 * time.Hour),
+	})
+
+	// Response Body
+	w.Header().Set("Content-Type", "application/json")
+
+	response := struct {
+		Token string `json:"token"`
+	}{
+		Token: tokenString}
+	json.NewEncoder(w).Encode(response)
 }
