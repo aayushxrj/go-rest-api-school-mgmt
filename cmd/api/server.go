@@ -58,6 +58,8 @@ func main() {
 	// 	Whitelist:                   []string{"sortBy", "sortOrder", "name", "age", "class"},
 	// }
 
+	jwtMiddleware := mw.MiddlewaresExcludePaths(mw.JWTMiddleware, "/execs/login")
+
 	// proper ordering of middlewares
 	// example: Cors -> Rate Limiter -> Response Time -> Security Headers -> Compression -> HPP -> Actual Handler
 	// secureMux := mw.Cors(rl.Middleware(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Compression(mw.Hpp(hppOptions)(mux))))))
@@ -65,6 +67,7 @@ func main() {
 		// mw.Hpp(hppOptions),
 		// mw.Compression,
 		mw.SecurityHeaders,
+		jwtMiddleware,
 		// mw.ResponseTimeMiddleware,
 		// rl.Middleware,
 		// mw.Cors,
