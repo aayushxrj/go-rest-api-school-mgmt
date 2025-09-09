@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/models"
 	"github.com/aayushxrj/go-rest-api-school-mgmt/pkg/utils"
@@ -288,4 +289,46 @@ func LoginDBHandler(username string) (*models.Exec, error) {
 		return nil, utils.ErrorHandler(err, "Database error")
 	}
 	return user, nil
+}
+
+func UpdatePasswordDBHandler(userId int, currentPassword, newPassword string) (bool, string, error) {
+	db, err := ConnectDB()
+	if err != nil {
+		return false, "", utils.ErrorHandler(err, "database connection error")
+	}
+	defer db.Close()
+
+	var username string
+	var userPassword string
+	var userRole string
+
+	err = db.QueryRow("SELECT username, password, role FROM execs WHERE id = ?", userId).Scan(&username, &userPassword, &userRole)
+	if err != nil {
+		return false, "", utils.ErrorHandler(err, "user not found")
+	}
+
+	err = utils.VerifyPassword(currentPassword, userPassword)
+	if err != nil {
+		return false, "", utils.ErrorHandler(err, "The password you entered does not match the current password on file.")
+	}
+
+	hashedPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return false, "", utils.ErrorHandler(err, "internal error")
+	}
+
+	currentTime := time.Now().Format(time.RFC3339)
+
+	_, err = db.Exec("UPDATE execs SET password = ?, password_changed_at = ? WHERE id = ?", hashedPassword, currentTime, userId)
+	if err != nil {
+		return false, "", utils.ErrorHandler(err, "failed to update the password")
+	}
+
+	token, err := utils.SignToken(userId, username, userRole)
+	if err != nil {
+		utils.ErrorHandler(err, "Password updated. Could not create token")
+		return false, "", utils.ErrorHandler(err, "Password updated. Could not create token")
+	}
+
+	return true, token, nil
 }
