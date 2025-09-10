@@ -62,6 +62,13 @@ definitions:
       subject:
         type: string
     type: object
+  models.UpdatePasswordRequest:
+    properties:
+      current_password:
+        type: string
+      new_password:
+        type: string
+    type: object
 host: localhost:3000
 info:
   contact: {}
@@ -254,6 +261,77 @@ paths:
       summary: Partially update one exec
       tags:
       - execs
+  /execs/{id}/updatepassword:
+    patch:
+      consumes:
+      - application/json
+      description: Allows an exec to update their password after providing the current
+        password. A new JWT token is generated upon success.
+      parameters:
+      - description: Exec ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Password update request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input or password update failed
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update an exec's password
+      tags:
+      - auth
+  /execs/forgotpassword:
+    post:
+      consumes:
+      - application/json
+      description: Sends a password reset link to the exec's email.
+      parameters:
+      - description: Exec email
+        in: body
+        name: body
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+          type: object
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Password reset link sent
+          schema:
+            type: string
+        "400":
+          description: Invalid request or user not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Request password reset
+      tags:
+      - auth
   /execs/login:
     post:
       consumes:
@@ -308,6 +386,46 @@ paths:
           schema:
             type: string
       summary: Log out a user
+      tags:
+      - auth
+  /execs/resetpassword/reset/{resetcode}:
+    post:
+      consumes:
+      - application/json
+      description: Resets the exec's password using a reset token sent via email.
+      parameters:
+      - description: Password reset token
+        in: path
+        name: resetcode
+        required: true
+        type: string
+      - description: New password request
+        in: body
+        name: body
+        required: true
+        schema:
+          properties:
+            confirm_password:
+              type: string
+            new_password:
+              type: string
+          type: object
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Password reset successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request or password mismatch
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Reset password using reset token
       tags:
       - auth
   /students:

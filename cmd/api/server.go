@@ -59,8 +59,10 @@ func main() {
 	// }
 
 	jwtMiddleware := mw.MiddlewaresExcludePaths(mw.JWTMiddleware,
+		"/swagger",
 		"/execs/login",
-		"/execs/forgotpassword")
+		"/execs/forgotpassword",
+		"/execs/resetpassword/reset")
 
 	// proper ordering of middlewares
 	// example: Cors -> Rate Limiter -> Response Time -> Security Headers -> Compression -> HPP -> Actual Handler

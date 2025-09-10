@@ -351,6 +351,18 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"message": "Logged out succesfully"}`))
 }
 
+// UpdatePasswordHandler godoc
+// @Summary Update an exec's password
+// @Description Allows an exec to update their password after providing the current password. A new JWT token is generated upon success.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param id path int true "Exec ID"
+// @Param body body models.UpdatePasswordRequest true "Password update request"
+// @Success 200 {object} map[string]string "Password updated successfully"
+// @Failure 400 {string} string "Invalid input or password update failed"
+// @Failure 500 {string} string "Internal server error"
+// @Router /execs/{id}/updatepassword [patch]
 func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	userId, err := strconv.Atoi(idStr)
@@ -403,6 +415,17 @@ func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// ForgotPasswordHandler godoc
+// @Summary Request password reset
+// @Description Sends a password reset link to the exec's email.
+// @Tags auth
+// @Accept json
+// @Produce plain
+// @Param body body object{email=string} true "Exec email"
+// @Success 200 {string} string "Password reset link sent"
+// @Failure 400 {string} string "Invalid request or user not found"
+// @Failure 500 {string} string "Internal server error"
+// @Router /execs/forgotpassword [post]
 func ForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Email string `json:"email"`
@@ -415,6 +438,11 @@ func ForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	r.Body.Close()
 
+	if req.Email == "" {
+		http.Error(w, "Please enter the email", http.StatusBadRequest)
+		return
+	}
+
 	err = sqlconnect.ForgotPasswordDBHandler(req.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -424,4 +452,51 @@ func ForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	// respond with success confirmation
 	fmt.Fprintf(w, "Password reset link sent to %s", req.Email)
 
+}
+
+// ResetPasswordHandler godoc
+// @Summary Reset password using reset token
+// @Description Resets the exec's password using a reset token sent via email.
+// @Tags auth
+// @Accept json
+// @Produce plain
+// @Param resetcode path string true "Password reset token"
+// @Param body body object{new_password=string,confirm_password=string} true "New password request"
+// @Success 200 {string} string "Password reset successfully"
+// @Failure 400 {string} string "Invalid request or password mismatch"
+// @Failure 500 {string} string "Internal server error"
+// @Router /execs/resetpassword/reset/{resetcode} [post]
+func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	token := r.PathValue("resetcode")
+
+	type request struct {
+		NewPassword     string `json:"new_password"`
+		ConfirmPassword string `json:"confirm_password"`
+	}
+
+	var req request
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid values in request", http.StatusBadRequest)
+		return
+	}
+	
+	if req.ConfirmPassword == "" || req.NewPassword == "" {
+		http.Error(w, "Please enter both the passwords", http.StatusBadRequest)
+		return
+	}
+
+	if req.NewPassword != req.ConfirmPassword {
+		http.Error(w, "Passwords should match", http.StatusBadRequest)
+		return
+	}
+
+	// Hash the new password
+	err = sqlconnect.ResetPasswordDBHandler(token, req.NewPassword)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	fmt.Fprintln(w, "Password reset successfully")
 }
