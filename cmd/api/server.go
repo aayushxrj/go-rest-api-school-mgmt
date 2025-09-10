@@ -58,7 +58,9 @@ func main() {
 	// 	Whitelist:                   []string{"sortBy", "sortOrder", "name", "age", "class"},
 	// }
 
-	jwtMiddleware := mw.MiddlewaresExcludePaths(mw.JWTMiddleware, "/execs/login")
+	jwtMiddleware := mw.MiddlewaresExcludePaths(mw.JWTMiddleware,
+		"/execs/login",
+		"/execs/forgotpassword")
 
 	// proper ordering of middlewares
 	// example: Cors -> Rate Limiter -> Response Time -> Security Headers -> Compression -> HPP -> Actual Handler

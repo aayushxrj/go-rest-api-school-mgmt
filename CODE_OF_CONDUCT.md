@@ -9,6 +9,7 @@ go get github.com/go-sql-driver/mysql
 go get github.com/joho/godotenv
 go get golang.org/x/crypto/argon2
 go get github.com/golang-jwt/jwt/v5
+go get github.com/go-mail/mail/v2
 ```
 
 # Setting up MariaDB on WSL Local (PORT 3306)
@@ -109,6 +110,27 @@ package main
 
 ```
 https://localhost:3000/swagger/index.html
+```
+# MAILHOG (Send mails from :1025 to :8025)
+
+```
+go install github.com/mailhog/MailHog@latest
+```
+
+Add these to ~/.bashrc
+
+```
+export GOPATH=$HOME/go
+export PATH="$PATH:$GOPATH/bin"
+```
+```
+source ~/.bashrc
+```
+```
+MailHog
+```
+```
+http://localhost:8025
 ```
 
 # TODO

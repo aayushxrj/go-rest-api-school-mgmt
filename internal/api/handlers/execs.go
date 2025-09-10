@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -350,7 +351,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"message": "Logged out succesfully"}`))
 }
 
-func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request){
+func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	userId, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -400,4 +401,27 @@ func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request){
 		Message: "Password updated successfully",
 	}
 	json.NewEncoder(w).Encode(response)
+}
+
+func ForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		return
+	}
+	r.Body.Close()
+
+	err = sqlconnect.ForgotPasswordDBHandler(req.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// respond with success confirmation
+	fmt.Fprintf(w, "Password reset link sent to %s", req.Email)
+
 }
