@@ -10,10 +10,10 @@ import (
 	"github.com/aayushxrj/go-rest-api-school-mgmt/pkg/utils"
 )
 
-func GetStudentsDBHandler(students []models.Student, r *http.Request) ([]models.Student, error) {
+func GetStudentsDBHandler(students []models.Student, r *http.Request, limit, page int) ([]models.Student, int, error) {
 	db, err := ConnectDB()
 	if err != nil {
-		return nil, utils.ErrorHandler(err, "Database connection error")
+		return nil, 0, utils.ErrorHandler(err, "Database connection error")
 	}
 	defer db.Close()
 
@@ -21,11 +21,18 @@ func GetStudentsDBHandler(students []models.Student, r *http.Request) ([]models.
 	var args []any
 
 	query, args = utils.AddFilters(r, query, args, models.Student{})
+
+	// Add Pagination
+	offset := (page - 1) * limit
+	query += " LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+
+	// Add Sorting
 	query = utils.AddSorting(r, query, models.Student{})
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
-		return nil, utils.ErrorHandler(err, "Database error")
+		return nil, 0, utils.ErrorHandler(err, "Database error")
 	}
 	defer rows.Close()
 
@@ -33,11 +40,18 @@ func GetStudentsDBHandler(students []models.Student, r *http.Request) ([]models.
 		var student models.Student
 		err := rows.Scan(&student.ID, &student.FirstName, &student.LastName, &student.Email, &student.Class)
 		if err != nil {
-			return nil, utils.ErrorHandler(err, "Database error")
+			return nil, 0, utils.ErrorHandler(err, "Database error")
 		}
 		students = append(students, student)
 	}
-	return students, nil
+
+	// get the count of total students
+	var totalStudents int
+	err = db.QueryRow("SELECT COUNT(*) FROM students WHERE 1=1").Scan(&totalStudents)
+	if err != nil {
+		return nil, 0, utils.ErrorHandler(err, "Database error")
+	}
+	return students, totalStudents, nil
 }
 
 func GetOneStudentDBHandler(id int) (models.Student, error) {

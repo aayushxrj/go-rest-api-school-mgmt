@@ -26,7 +26,15 @@ import (
 // @Router /students [get]
 func GetStudentsHandler(w http.ResponseWriter, r *http.Request) {
 	var students []models.Student
-	students, err := sqlconnect.GetStudentsDBHandler(students, r)
+
+	// url?limit=50&page=3
+	// Calculation is page - 1 * limit
+	//  (1 - 1) * 50 = 0
+	//  (2 - 1) * 50 = 50
+	//  (3 - 1) * 50 = 100
+	page, limit := getPaginationParams(r)
+
+	students,totalStudents, err := sqlconnect.GetStudentsDBHandler(students, r, limit, page)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -35,16 +43,35 @@ func GetStudentsHandler(w http.ResponseWriter, r *http.Request) {
 	response := struct {
 		Status string           `json:"status"`
 		Count  int              `json:"count"`
+		Page   int              `json:"page"`
+		PageSize int              `json:"page_size"`
 		Data   []models.Student `json:"data"`
 	}{
 		Status: "success",
-		Count:  len(students),
+		Count:  totalStudents,
+		Page:   page,
+		PageSize: limit,
 		Data:   students,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
+}
+
+func getPaginationParams(r *http.Request) (limit, offset int) {
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err = strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil || limit < 1 {
+		limit = 10 // Default limit
+	}
+
+	offset = (page - 1) * limit
+	return limit, offset
 }
 
 // GetOneStudentHandler godoc
