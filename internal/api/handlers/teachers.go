@@ -8,6 +8,7 @@ import (
 
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/models"
 	"github.com/aayushxrj/go-rest-api-school-mgmt/internal/repository/sqlconnect"
+	"github.com/aayushxrj/go-rest-api-school-mgmt/pkg/utils"
 )
 
 // GetTeachersHandler godoc
@@ -378,6 +379,13 @@ func GetStudentsByTeacherIDHandler(w http.ResponseWriter, r *http.Request){
 // @Failure 500 {string} string "Internal server error"
 // @Router /teachers/{id}/studentcount [get]
 func GetStudentsCountByTeacherIDHandler(w http.ResponseWriter, r *http.Request) {
+
+	// admin, manager, exec
+	authorized, err := utils.AuthorizeUser(r.Context().Value(utils.ContextKey("role")).(string), "admin", "manager", "exec")
+	if err != nil || !authorized {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	teacherId := r.PathValue("id")
 
