@@ -10,6 +10,7 @@ go get github.com/joho/godotenv
 go get golang.org/x/crypto/argon2
 go get github.com/golang-jwt/jwt/v5
 go get github.com/go-mail/mail/v2
+github.com/microcosm-cc/bluemonday
 ```
 
 # Setting up MariaDB on WSL Local (PORT 3306)
