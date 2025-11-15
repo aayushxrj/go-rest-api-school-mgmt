@@ -66,15 +66,15 @@ func main() {
 
 	// proper ordering of middlewares
 	// example: Cors -> Rate Limiter -> Response Time -> Security Headers -> Compression -> HPP -> Actual Handler
-	// secureMux := mw.Cors(rl.Middleware(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Compression(mw.Hpp(hppOptions)(mux))))))
-	secureMux := utils.ApplyMiddlewares(router,
-		// mw.Hpp(hppOptions),
-		// mw.Compression,
-		mw.SecurityHeaders,
-		jwtMiddleware,
-		// mw.ResponseTimeMiddleware,
-		// rl.Middleware,
-		// mw.Cors,
+	// secureMux := utils.ApplyMiddlewares(router, mw.SecurityHeaders, mw.Compression, mw.Hpp(hppOptions), mw.XSSMiddleware, jwtMiddleware, mw.ResponseTimeMiddleware, rl.Middleware, mw.Cors)
+	secureMux := utils.ApplyMiddlewares(router, 
+		mw.SecurityHeaders, 
+		mw.Compression, 
+		// mw.Hpp(hppOptions), 
+		mw.XSSMiddleware, 
+		jwtMiddleware, 
+		mw.ResponseTimeMiddleware, 
+		// mw.Cors
 	)
 
 	// Create custom server
